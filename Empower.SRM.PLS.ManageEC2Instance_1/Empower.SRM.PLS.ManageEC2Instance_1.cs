@@ -54,6 +54,7 @@ namespace Empower.SRM.PLS.ManageEC2Instance
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Security.Cryptography;
 	using Newtonsoft.Json;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Library.Profile;
@@ -81,9 +82,26 @@ namespace Empower.SRM.PLS.ManageEC2Instance
 			try
 			{
 				helper.Log($"Executing profile-Load with Action {configurationInfo?.ProfileAction}", LogEntryType.Info);
+				var parametersConfiguration = helper.GetNodeSrmParametersConfiguration(configurationInfo,nodeProfileConfiguration).ToList();
 
+				var ec2ManageInstance = parametersConfiguration.SingleOrDefault(x =>
+				string.Equals(x.ProfileParameterName, "AWS EC2 State"));
+				if (ec2ManageInstance == null)
+				{
+					return;
+				}
+				var value = Convert.ToString(ec2ManageInstance.Value.GetValue());
+
+				if (string.Equals(value, "Start", StringComparison.InvariantCultureIgnoreCase))
+				{
+					element.SetParameter(1007, 1);
+				}
+				else
+				{
+					element.SetParameter(1008, 1);
+				}
 				// TODO: Implement logic here /test push
-				
+
 
 				helper.Log($"Successfully configured resource", LogEntryType.Info);
 			}
